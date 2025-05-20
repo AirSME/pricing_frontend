@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
-import subprocess
+import requests
+import os
 
 app = Flask(__name__)
 
@@ -15,25 +16,23 @@ def get_products():
 
     url = "http://154.72.246.201/NologyDataFeed/api/Products/View"
 
-    session = requests.Session()
-    request = requests.Request(
-        method='GET',
-        url=url,
-        json={
-            "Username": username,
-            "Secret": secret,
-            "ImageData": False
-        }
-    )
-    prepped = session.prepare_request(request)
+    headers = {
+        "Accept": "application/json"
+    }
+
+    payload = {
+        "Username": "INN008",
+        "Secret": "1O_Wi2SY7z",
+        "ImageData": False
+    }
 
     try:
-        response = session.send(prepped)
+        response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
-        data = response.json()
-        return jsonify(data)  
-    except Exception as e:
-        return f"Error: {str(e)}", 500
+        return jsonify(response.json())
+    except requests.exceptions.RequestException as e:
+        return f"Request failed: {str(e)}", 500
+
 
 if __name__ == "__main__":
     app.run()
