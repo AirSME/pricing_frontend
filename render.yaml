@@ -1,7 +1,14 @@
 services:
   - type: cron
-    name: product-feed-job
-    schedule: "0 * * * *"  # runs every hour
+    name: product-csv-generator
+    schedule: "0 0 * * 5"  # Every Friday at midnight (UTC)
     runtime: python
     buildCommand: ""
-    startCommand: "python main.py"
+    startCommand: "python cron/main.py"
+
+  - type: web
+    name: product-feed-web
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: "gunicorn web.app:app"
