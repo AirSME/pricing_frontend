@@ -1,6 +1,5 @@
 from flask import Flask, jsonify
 import requests
-import os
 
 app = Flask(__name__)
 
@@ -10,9 +9,6 @@ def home():
 
 @app.route("/products")
 def get_products():
-    
-    username = os.getenv("NOLOGY_USERNAME")
-    secret = os.getenv("NOLOGY_SECRET")
 
     url = "http://154.72.246.201/NologyDataFeed/api/Products/View"
 
