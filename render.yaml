@@ -1,0 +1,7 @@
+services:
+  - type: cron
+    name: product-feed-job
+    schedule: "0 * * * *"  # runs every hour
+    runtime: python
+    buildCommand: ""
+    startCommand: "python main.py"
