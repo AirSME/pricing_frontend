@@ -1,17 +1,39 @@
-from flask import Flask
+from flask import Flask, jsonify
 import subprocess
 
-# This is the important part: defining 'app'
 app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Nology Product Sync Web Service is running."
+    return "Visit /products to view Nology product data."
 
-@app.route("/sync")
-def trigger_sync():
-    result = subprocess.run(["python", "cron/main.py"], capture_output=True, text=True)
-    return f"<pre>{result.stdout or result.stderr}</pre>"
+@app.route("/products")
+def get_products():
+    
+    username = os.getenv("NOLOGY_USERNAME")
+    secret = os.getenv("NOLOGY_SECRET")
+
+    url = "http://154.72.246.201/NologyDataFeed/api/Products/View"
+
+    session = requests.Session()
+    request = requests.Request(
+        method='GET',
+        url=url,
+        json={
+            "Username": username,
+            "Secret": secret,
+            "ImageData": False
+        }
+    )
+    prepped = session.prepare_request(request)
+
+    try:
+        response = session.send(prepped)
+        response.raise_for_status()
+        data = response.json()
+        return jsonify(data)  
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
 if __name__ == "__main__":
     app.run()
