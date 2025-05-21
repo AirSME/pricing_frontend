@@ -14,15 +14,14 @@ SECRET = os.getenv("NOLOGY_SECRET")
 def home():
     return "Use /products (live), /dummy (local), or /download (CSV)."
 
-# 🔹 LIVE PRODUCT FEED (uses environment variables)
+# 🔹 LIVE PRODUCT FEED (correct method: GET with JSON + Basic Auth)
 @app.route("/products")
 def get_products():
     if not USERNAME or not SECRET:
         return "Missing API credentials. Please set NOLOGY_USERNAME and NOLOGY_SECRET.", 500
 
-    url = API_URL
     headers = {
-        "Content-Type": "application/json; charset=utf-8"
+        "Content-Type": "application/json"
     }
 
     payload = {
@@ -33,21 +32,26 @@ def get_products():
     }
 
     try:
-        # Use json.dumps and pass it as data, not json=
-        response = requests.post(
-            url,
+        response = requests.get(
+            API_URL,
             headers=headers,
-            data=json.dumps(payload),
-            timeout=15
+            auth=(USERNAME, SECRET),  # 🔐 Basic Auth
+            data=json.dumps(payload),  # 📦 JSON body
+            timeout=20
         )
         response.raise_for_status()
-        return jsonify(response.json())
+        data = response.json()
+
+        # Optional: Save to file for reuse in /download
+        with open("nology_raw.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+
+        return jsonify(data)
 
     except requests.exceptions.HTTPError as err:
         return f"HTTPError {response.status_code}: {response.text}", 500
     except Exception as e:
         return f"Unexpected error: {e}", 500
-
 
 # 🔹 DUMMY DATA ONLY (offline testing)
 @app.route("/dummy")
@@ -93,4 +97,3 @@ def download_csv():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
