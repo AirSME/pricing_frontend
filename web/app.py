@@ -32,23 +32,19 @@ def get_products():
     }
 
     try:
-        response = requests.post(
+        response = requests.get(
             API_URL,
             headers=headers,
-            json=payload,
             auth=(USERNAME, SECRET),
+            data=json.dumps(payload),
             timeout=20
         )
         response.raise_for_status()
-
         data = response.json()
 
-        # ✅ Write nology data to nology_test.json
-        file_path = os.path.join(os.path.dirname(__file__), "nology_test.json")
-        with open(file_path, "w", encoding="utf-8") as f:
+        # Save to nology_test.json
+        with open("nology_test.json", "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
-
-        # ✅ Return the response as JSON
         return jsonify(data)
 
     except Exception as e:
