@@ -57,12 +57,12 @@ def get_products():
 @app.route("/dummy")
 def get_dummy_data():
     try:
-        file_path = os.path.join(os.path.dirname(__file__), "nology_test.json")
+        file_path = os.path.join(os.path.dirname(__file__), "nology_raw.json")
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return jsonify(data)
     except FileNotFoundError:
-        return "nology_test.json not found in /web folder.", 404
+        return "nology_raw.json not found in /web folder.", 404
     except Exception as e:
         return f"Failed to load dummy data: {e}", 500
 
