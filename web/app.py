@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 
-API_URL = "http://154.72.246.201/NologyDataFeed/api/Products/View"
+API_URL = "https://erp.nology.co.za/NologyDataFeed/api/Products/View"
 USERNAME = os.getenv("NOLOGY_USERNAME")
 SECRET = os.getenv("NOLOGY_SECRET")
 
