@@ -12,7 +12,7 @@ SECRET = os.getenv("NOLOGY_SECRET")
 
 @app.route("/")
 def home():
-    return "Use /products (live), /dummy (local), or /download (CSV)."
+    return "Use /products (live), /dummy (local), or /download (CSV). /test-data"
 
 # 🔹 LIVE PRODUCT FEED
 @app.route("/products")
@@ -32,20 +32,23 @@ def get_products():
     }
 
     try:
-        response = requests.get(
+        response = requests.post(
             API_URL,
             headers=headers,
+            json=payload,
             auth=(USERNAME, SECRET),
-            data=json.dumps(payload),
             timeout=20
         )
         response.raise_for_status()
+
         data = response.json()
 
-        # Save to nology_test.json
-        with open(os.path.join(os.path.dirname(__file__), "nology_test.json"), "w", encoding="utf-8") as f:
+        # ✅ Write nology data to nology_test.json
+        file_path = os.path.join(os.path.dirname(__file__), "nology_test.json")
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
+        # ✅ Return the response as JSON
         return jsonify(data)
 
     except Exception as e:
@@ -98,16 +101,3 @@ def download_csv():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-# 🔹 Open supplier data
-@app.route("/test-data")
-def get_test_data():
-    try:
-        file_path = os.path.join(os.path.dirname(__file__), "nology_test.json")
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return jsonify(data)
-    except FileNotFoundError:
-        return "nology_test.json not found in /web folder.", 404
-    except Exception as e:
-        return f"Failed to load nology_test.json: {e}", 500
