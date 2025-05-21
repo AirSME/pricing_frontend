@@ -35,23 +35,22 @@ def get_products():
         response = requests.get(
             API_URL,
             headers=headers,
-            auth=(USERNAME, SECRET),  
+            auth=(USERNAME, SECRET),
             data=json.dumps(payload),
             timeout=20
         )
         response.raise_for_status()
         data = response.json()
 
-        # Save to file for reuse in /download
-        with open("nology_raw.json", "w", encoding="utf-8") as f:
+        # Save to nology_test.json
+        with open(os.path.join(os.path.dirname(__file__), "nology_test.json"), "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
         return jsonify(data)
 
-    except requests.exceptions.HTTPError as err:
-        return f"HTTPError {response.status_code}: {response.text}", 500
     except Exception as e:
-        return f"Unexpected error: {e}", 500
+        return f"Live API request failed: {str(e)}", 500
+
 
 # 🔹 DUMMY DATA (offline testing)
 @app.route("/dummy")
