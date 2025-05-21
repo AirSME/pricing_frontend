@@ -14,7 +14,7 @@ SECRET = os.getenv("NOLOGY_SECRET")
 def home():
     return "Use /products (live), /dummy (local), or /download (CSV)."
 
-# 🔹 LIVE PRODUCT FEED (correct method: GET with JSON + Basic Auth)
+# 🔹 LIVE PRODUCT FEED
 @app.route("/products")
 def get_products():
     if not USERNAME or not SECRET:
@@ -35,14 +35,14 @@ def get_products():
         response = requests.get(
             API_URL,
             headers=headers,
-            auth=(USERNAME, SECRET),  # 🔐 Basic Auth
-            data=json.dumps(payload),  # 📦 JSON body
+            auth=(USERNAME, SECRET),  
+            data=json.dumps(payload),
             timeout=20
         )
         response.raise_for_status()
         data = response.json()
 
-        # Optional: Save to file for reuse in /download
+        # Save to file for reuse in /download
         with open("nology_raw.json", "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
@@ -53,17 +53,13 @@ def get_products():
     except Exception as e:
         return f"Unexpected error: {e}", 500
 
-# 🔹 DUMMY DATA ONLY (offline testing)
+# 🔹 DUMMY DATA (offline testing)
 @app.route("/dummy")
 def get_dummy_data():
-    try:
-        with open("nology_raw.json", "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return jsonify(data)
-    except FileNotFoundError:
-        return "nology_raw.json not found. Add your dummy file to the root directory.", 404
-    except Exception as e:
-        return f"Failed to load dummy data: {e}", 500
+    with open("nology_test.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return jsonify(data)
+
 
 # 🔹 DOWNLOAD CSV FROM DUMMY FILE
 @app.route("/download")
