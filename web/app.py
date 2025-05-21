@@ -20,8 +20,9 @@ def get_products():
     if not USERNAME or not SECRET:
         return "Missing API credentials. Please set NOLOGY_USERNAME and NOLOGY_SECRET.", 500
 
+    url = API_URL
     headers = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json; charset=utf-8"
     }
 
     payload = {
@@ -32,12 +33,21 @@ def get_products():
     }
 
     try:
-        response = requests.post(API_URL, headers=headers, json=payload, timeout=15)
+        # Use json.dumps and pass it as data, not json=
+        response = requests.post(
+            url,
+            headers=headers,
+            data=json.dumps(payload),
+            timeout=15
+        )
         response.raise_for_status()
-        data = response.json()
-        return jsonify(data)
+        return jsonify(response.json())
+
+    except requests.exceptions.HTTPError as err:
+        return f"HTTPError {response.status_code}: {response.text}", 500
     except Exception as e:
-        return f"Live API request failed: {str(e)}", 500
+        return f"Unexpected error: {e}", 500
+
 
 # 🔹 DUMMY DATA ONLY (offline testing)
 @app.route("/dummy")
