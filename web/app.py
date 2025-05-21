@@ -20,15 +20,19 @@ def get_products():
     if not USERNAME or not SECRET:
         return "Missing API credentials. Please set NOLOGY_USERNAME and NOLOGY_SECRET.", 500
 
-    params = {
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    payload = {
         "Username": USERNAME,
         "Secret": SECRET,
-        "ImageData": "false",
+        "ImageData": False,
         "ReturnType": "JSON"
     }
 
     try:
-        response = requests.get(API_URL, params=params, timeout=15)
+        response = requests.post(API_URL, headers=headers, json=payload, timeout=15)
         response.raise_for_status()
         data = response.json()
         return jsonify(data)
@@ -79,3 +83,4 @@ def download_csv():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
