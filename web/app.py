@@ -56,9 +56,15 @@ def get_products():
 # 🔹 DUMMY DATA (offline testing)
 @app.route("/dummy")
 def get_dummy_data():
-    with open("nology_test.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return jsonify(data)
+    try:
+        file_path = os.path.join(os.path.dirname(__file__), "nology_test.json")
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify(data)
+    except FileNotFoundError:
+        return "nology_test.json not found in /web folder.", 404
+    except Exception as e:
+        return f"Failed to load dummy data: {e}", 500
 
 
 # 🔹 DOWNLOAD CSV FROM DUMMY FILE
