@@ -1,9 +1,12 @@
 from flask import Flask, jsonify, send_file
 from google.cloud import storage
+from dotenv import load_dotenv
+load_dotenv()
 import requests
 import json
 import csv
 import os
+import tempfile
 
 def upload_to_gcs(local_file_path, bucket_name, destination_blob_name):
     from pathlib import Path
@@ -15,7 +18,7 @@ def upload_to_gcs(local_file_path, bucket_name, destination_blob_name):
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
     blob.upload_from_filename(local_file_path)
-    print(f"Uploaded {local_file_path} to gs://{bucket_name}/{destination_blob_name}")
+    print(f"✅ Uploaded {local_file_path} to gs://{bucket_name}/{destination_blob_name}")
 
 
 app = Flask(__name__)
@@ -56,18 +59,23 @@ def get_products():
         response.raise_for_status()
         data = response.json()
 
-        local_file_path = "/tmp/nology_test.json"
-        with open(local_file_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
+        # ✅ Create a temporary file and write JSON to it
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as tmp_file:
+            json.dump(data, tmp_file, indent=2)
+            local_file_path = tmp_file.name
 
+        # ✅ Upload to Google Cloud Storage
         upload_to_gcs(
             local_file_path,
             bucket_name="nology-sync-bucket",
             destination_blob_name="nology_test.json"
         )
 
+        return jsonify({"message": "Synced to GCS", "records": len(data)})
+
     except Exception as e:
         return f"Live API request failed: {str(e)}", 500
+
 
 
 # 🔹 DUMMY DATA (offline testing)
