@@ -1,4 +1,5 @@
 __pycache__/
 *.pyc
 .env
-master.csv
+master_product_feed.xlsx
+file-uploader-key.json

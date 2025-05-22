@@ -1,8 +1,22 @@
 from flask import Flask, jsonify, send_file
+from google.cloud import storage
 import requests
 import json
 import csv
 import os
+
+def upload_to_gcs(local_file_path, bucket_name, destination_blob_name):
+    from pathlib import Path
+
+    key_path = Path(__file__).parent.parent / "file-uploader-key.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(key_path.resolve())
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(destination_blob_name)
+    blob.upload_from_filename(local_file_path)
+    print(f"Uploaded {local_file_path} to gs://{bucket_name}/{destination_blob_name}")
+
 
 app = Flask(__name__)
 
@@ -42,10 +56,15 @@ def get_products():
         response.raise_for_status()
         data = response.json()
 
-        # Save to nology_test.json
-        with open("nology_test.json", "w", encoding="utf-8") as f:
+        local_file_path = "/tmp/nology_test.json"
+        with open(local_file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
-        return jsonify(data)
+
+        upload_to_gcs(
+            local_file_path,
+            bucket_name="nology-sync-bucket",
+            destination_blob_name="nology_test.json"
+        )
 
     except Exception as e:
         return f"Live API request failed: {str(e)}", 500
