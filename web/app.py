@@ -12,6 +12,18 @@ from pathlib import Path
 
 app = Flask(__name__)
 
+def round_up_to_99(price):
+    try:
+        price = float(price)
+        if price < 100:
+            return ((price // 10) + 1) * 10 - 1  # 35 → 39, 36 → 39
+        elif price < 1000:
+            return ((price // 100) + 1) * 100 - 1  # 123 → 199
+        else:
+            return ((price // 100) + 1) * 100 - 1  # 12345 → 12399
+    except:
+        return price
+
 API_URL = "https://erp.nology.co.za/NologyDataFeed/api/Products/View"
 USERNAME = os.getenv("NOLOGY_USERNAME")
 SECRET = os.getenv("NOLOGY_SECRET")
@@ -44,8 +56,8 @@ def get_csv_row(item):
         "stock_status": "no",
         "backorders": "no",
         "manage_stock": "",
-        "regular_price": round(float(item.get("Price", 0)) * 1.20, 2),
-        "sale_price": round(float(item.get("Price", 0)) * 1.15, 2),
+        "regular_price": round_up_to_99(float(item.get("Price", 0)) * 1.20),
+        "sale_price": round_up_to_99(float(item.get("Price", 0)) * 1.15),
         "weight": "",
         "length": "",
         "width": "",
@@ -60,6 +72,7 @@ def get_csv_row(item):
         "attribute_data:Color": "",
         "attribute:Size": "",
         "attribute_data:Size": "",
+        "images": item.get("AllImages", "")
     }
 
 # API endpoint
@@ -75,7 +88,7 @@ def get_products():
     payload = {
         "Username": USERNAME,
         "Secret": SECRET,
-        "ImageData": False,
+        "ImageData": True,
         "ReturnType": "JSON"
     }
 
