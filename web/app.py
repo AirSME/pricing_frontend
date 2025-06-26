@@ -30,9 +30,11 @@ SECRET = os.getenv("NOLOGY_SECRET")
 
 # Upload file to Google Cloud Storage
 def upload_to_gcs(local_file_path, bucket_name, destination_blob_name):
-    key_path = Path(__file__).parent.parent / "file-uploader-key.json"
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(key_path.resolve())
-
+    creds_json = os.getenv("GOOGLE_CREDENTIALS")
+    creds_file = tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".json")
+    creds_file.write(creds_json)
+    creds_file.close()
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds_file.name
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
