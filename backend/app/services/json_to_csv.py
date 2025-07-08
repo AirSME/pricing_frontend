@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_file
+from flask import Blueprint, jsonify
 from google.cloud import storage
 from dotenv import load_dotenv
 load_dotenv()
@@ -8,19 +8,18 @@ import json
 import csv
 import os
 import tempfile
-from pathlib import Path
 
-app = Flask(__name__)
+json_to_csv_bp = Blueprint('json_to_csv', __name__)
 
 def round_up_to_99(price):
     try:
         price = float(price)
         if price < 100:
-            return ((price // 10) + 1) * 10 - 1  # 35 → 39, 36 → 39
+            return ((price // 10) + 1) * 10 - 1
         elif price < 1000:
-            return ((price // 100) + 1) * 100 - 1  # 123 → 199
+            return ((price // 100) + 1) * 100 - 1
         else:
-            return ((price // 100) + 1) * 100 - 1  # 12345 → 12399
+            return ((price // 100) + 1) * 100 - 1
     except:
         return price
 
@@ -28,7 +27,6 @@ API_URL = "https://erp.nology.co.za/NologyDataFeed/api/Products/View"
 USERNAME = os.getenv("NOLOGY_USERNAME")
 SECRET = os.getenv("NOLOGY_SECRET")
 
-# Upload file to Google Cloud Storage
 def upload_to_gcs(local_file_path, bucket_name, destination_blob_name):
     creds_json = os.getenv("GOOGLE_CREDENTIALS")
     creds_file = tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".json")
@@ -39,9 +37,7 @@ def upload_to_gcs(local_file_path, bucket_name, destination_blob_name):
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
     blob.upload_from_filename(local_file_path)
-    print(f"✅ Uploaded {local_file_path} to gs://{bucket_name}/{destination_blob_name}")
 
-# WooCommerce CSV field mapping
 def get_csv_row(item):
     return {
         "post_title": item.get("ShortDescription", ""),
@@ -77,16 +73,12 @@ def get_csv_row(item):
         "images": item.get("AllImages", "")
     }
 
-# API endpoint
-@app.route("/products")
+@json_to_csv_bp.route("/products")
 def get_products():
     if not USERNAME or not SECRET:
         return "Missing API credentials. Please set NOLOGY_USERNAME and NOLOGY_SECRET.", 500
 
-    headers = {
-        "Content-Type": "application/json"
-    }
-
+    headers = {"Content-Type": "application/json"}
     payload = {
         "Username": USERNAME,
         "Secret": SECRET,
@@ -105,10 +97,8 @@ def get_products():
         response.raise_for_status()
         data = response.json()
 
-        # Prepare WooCommerce headers
         csv_header = list(get_csv_row({}).keys())
 
-        # Write CSV to temp file
         with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".csv", newline="", encoding="utf-8") as tmp_file:
             writer = csv.DictWriter(tmp_file, fieldnames=csv_header)
             writer.writeheader()
@@ -116,22 +106,13 @@ def get_products():
                 writer.writerow(get_csv_row(item))
             local_file_path = tmp_file.name
 
-        # Upload CSV to GCS
-        upload_to_gcs(
-            local_file_path,
-            bucket_name="nology-sync-bucket",
-            destination_blob_name="nology_test.csv"
-        )
+        upload_to_gcs(local_file_path, bucket_name="nology-sync-bucket", destination_blob_name="nology_test.csv")
 
         return jsonify({"message": "CSV synced to GCS", "records": len(data)})
 
     except Exception as e:
         return f"Live API request failed: {str(e)}", 500
 
-@app.route("/")
+@json_to_csv_bp.route("/")
 def home():
     return "Use /products (live sync), /dummy (test), or /download (local CSV)."
-
-if __name__ == "__main__":
-    app.run(debug=True)
-

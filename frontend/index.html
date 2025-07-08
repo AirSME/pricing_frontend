@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WooCommerce Pricing Wizard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div>
+    <h1>WooCommerce Pricing Wizard</h1>
+      <div>
+        <h2>Upload Excel File</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input class="form-control" type="file" name="file" id="fileInput" accept=".xlsx,.xls" required />
+          <button type="submit" id="uploadButton">Upload File</button>
+        </form>
+        <div style="margin-top: 10px;">
+            <button id="cleanBtn" disabled>Clean File</button>
+            <button id="downloadBtn" disabled>Download Cleaned File</button>
+        </div>
+        <div id="message"></div>
+      </div>
+  </div>
+<script src="./script.js"></script>
+</body>
+</html>
