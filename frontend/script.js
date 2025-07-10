@@ -91,7 +91,7 @@ uploadButton.addEventListener('click', async (event) => {
     downloadLink.download = window.cleanedFilename;
     downloadLink.click();
     messageDiv.innerText = 'File downloaded successfully';
-    messageDiv.style.color = 'red';
+    messageDiv.style.color = 'green';
   });
 });
 
