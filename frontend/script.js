@@ -1,3 +1,5 @@
+const API_BASE = 'https://pricing-backend-api.azurewebsites.net';
+
 window.addEventListener('beforeunload', () => {
   console.log("Page is reloading...");
 });
@@ -24,7 +26,7 @@ uploadButton.addEventListener('click', async (event) => {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://localhost:5050/excel_formatter/upload', {
+      const response = await fetch(`${API_BASE}/excel_formatter/upload`, {
         method: 'POST',
         body: formData
       });
@@ -53,7 +55,7 @@ uploadButton.addEventListener('click', async (event) => {
     messageDiv.style.color = 'black';
 
     try {
-      const response = await fetch('http://localhost:5050/excel_formatter/clean', {
+      const response = await fetch(`${API_BASE}/excel_formatter/clean`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -87,7 +89,7 @@ uploadButton.addEventListener('click', async (event) => {
     return;
   } 
     const downloadLink = document.createElement('a');
-    downloadLink.href = `http://localhost:5050/excel_formatter/download?filename=${encodeURIComponent(window.cleanedFilename)}`;
+    downloadLink.href = `${API_BASE}/excel_formatter/download?filename=${encodeURIComponent(window.cleanedFilename)}`;
     downloadLink.download = window.cleanedFilename;
     downloadLink.click();
     messageDiv.innerText = 'File downloaded successfully';
