@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div>
+  <!-- <div>
     <h1>WooCommerce Pricing Wizard</h1>
       <div>
         <h2>Upload Excel File</h2>
@@ -19,7 +19,13 @@
         </div>
         <div id="message"></div>
       </div>
-  </div>
-<script src="./script.js"></script>
+  </div> -->
+  <form action="https://n8napp-bwd3fzesc7h4hmet.southafricanorth-01.azurewebsites.net/webhook-test/upload-pricing-file" 
+      method="POST" 
+      enctype="multipart/form-data">
+  <input type="file" name="file" />
+  <button type="submit">Upload</button>
+  </form>
+<script src="./script_ai.js"></script>
 </body>
 </html>
